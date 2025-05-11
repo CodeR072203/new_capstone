@@ -6,7 +6,7 @@ import {
 
 export const sendVerificationEmail = async (email, verificationToken) => {
   try {
-    const { data, error } = await resend.emails.send({
+    await resend.emails.send({
       from: "AZUREHUB <onboarding@resend.dev>",
       to: [email],
       subject: "Verify Your Email Address Now",
@@ -16,46 +16,55 @@ export const sendVerificationEmail = async (email, verificationToken) => {
       ),
     });
   } catch (error) {
-    console.log("error sending verification email", error);
-    throw new Error("Error sending verification email");
+    console.error("❌ Error sending verification email:", error);
+    throw new Error("Failed to send verification email");
   }
 };
 
 export const sendWelcomeEmail = async (email, name) => {
   try {
-    const { data, error } = await resend.emails.send({
+    await resend.emails.send({
       from: "AZUREHUB <onboarding@resend.dev>",
       to: [email],
-      subject: "Welcome to our company",
+      subject: "Welcome to Our Platform!",
       html: WELCOME_EMAIL_TEMPLATE.replace("{name}", name),
     });
   } catch (error) {
-    console.log("error sending welcome email", error);
+    console.error("❌ Error sending welcome email:", error);
   }
 };
 
 export const sendPasswordResetEmail = async (email, resetURL) => {
   try {
-    const { data, error } = await resend.emails.send({
+    await resend.emails.send({
       from: "AZUREHUB <onboarding@resend.dev>",
       to: [email],
       subject: "Reset Your Password",
-      html: `Click <a href="${resetURL}">here</a> to reset your password`,
+      html: `
+        <p>Hello,</p>
+        <p>You requested a password reset. Click the link below to set a new password:</p>
+        <p><a href="${resetURL}">${resetURL}</a></p>
+        <p>If you didn’t request this, you can safely ignore this email.</p>
+      `,
     });
   } catch (error) {
-    console.log("error sending password reset email", error);
+    console.error("❌ Error sending password reset email:", error);
+    throw new Error("Failed to send password reset email");
   }
 };
 
 export const sendResetSuccessEmail = async (email) => {
   try {
-    const { data, error } = await resend.emails.send({
+    await resend.emails.send({
       from: "AZUREHUB <onboarding@resend.dev>",
       to: [email],
-      subject: "Password Reset Was Successful",
-      html: `Your password was reset successfully`,
+      subject: "Your Password Was Reset Successfully",
+      html: `
+        <p>Your password has been reset successfully.</p>
+        <p>If you did not perform this action, please contact support immediately.</p>
+      `,
     });
   } catch (error) {
-    console.log("error sending password reset successful email", error);
+    console.error("❌ Error sending reset success email:", error);
   }
-}
+};
