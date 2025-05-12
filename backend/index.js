@@ -1,16 +1,17 @@
+// Load .env first
+import dotenv from "dotenv";
+dotenv.config(); // ✅ Load environment variables early
+
 import express from "express";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import authRoutes from "./routes/auth-route.js";
 import { connectToDatabase } from "./database/connectionToDatabase.js";
 
-dotenv.config();
-
 const app = express();
 
-// Middlewares
+// Middleware
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
@@ -18,10 +19,10 @@ app.use(cookieParser());
 // Database Connection
 connectToDatabase();
 
-// Auth Routes
+// Routes
 app.use("/api/auth", authRoutes);
 
-// Reservation Schema & Model
+// Test reservation schema (keep if needed)
 const reservationSchema = new mongoose.Schema({
   name: String,
   email: String,
@@ -29,10 +30,8 @@ const reservationSchema = new mongoose.Schema({
   date: String,
   nights: Number,
 });
-
 const Reservation = mongoose.model("Reservation", reservationSchema);
 
-// Routes for Booking
 app.get("/api/availability", async (req, res) => {
   res.json({ availableRooms: ["Single", "Double", "Suite"] });
 });
@@ -67,6 +66,5 @@ app.delete("/api/cancel/:id", async (req, res) => {
   }
 });
 
-// Start Server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));

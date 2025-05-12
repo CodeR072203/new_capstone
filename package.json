@@ -1,0 +1,50 @@
+{
+<<<<<<< HEAD
+  "dependencies": {
+    "bootstrap": "^5.3.5",
+    "react-bootstrap": "^2.10.9",
+    "react-router-dom": "^7.5.3"
+=======
+  "name": "mern-axure",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "backend/index.js",
+  "scripts": {
+    "dev": "nodemon backend/index.js"
+  },
+  "keywords": [],
+  "author": "Brett Westwood",
+  "license": "ISC",
+  "dependencies": {
+    "backend": "^0.0.0",
+    "bcryptjs": "^2.4.3",
+    "bootstrap": "^5.3.5",
+    "cd": "^0.3.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^0.507.0",
+    "mongoose": "^8.14.1",
+    "node": "^22.15.0",
+    "react": "^19.1.0",
+    "react-router-dom": "^7.5.3",
+    "react-toastify": "^11.0.5",
+    "resend": "^4.5.0",
+    "tailwind-merge": "^3.2.0",
+    "tw-animate-css": "^1.2.9",
+    "vite": "^6.3.4"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "nodemon": "^3.1.10",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.5"
+>>>>>>> 23c44ee (eto na)
+  }
+}
