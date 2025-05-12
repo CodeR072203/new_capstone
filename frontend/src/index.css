@@ -1,0 +1,21 @@
+/* src/index.css or src/main.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* index.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  width: 100%;
+  overflow-x: hidden;
+  
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}

@@ -1,0 +1,43 @@
+/* Base section with a sky blue background */
+.pricing-section {
+  background: linear-gradient(to bottom right, #074173, #D1F8EF);
+  background-size: cover;
+  background-position: center;
+  min-height: 50vh;
+  padding: 2rem 0;
+}
+
+/* Transparent card with accent border and subtle shadow */
+.transparent-card {
+
+  border-radius: 1rem;
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 8px rgba(54, 116, 181, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.transparent-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(54, 116, 181, 0.3);
+}
+
+/* Heading Styling */
+.pricing-section h3 {
+  color: #eef3f8;
+}
+
+/* Price list styling */
+.transparent-card ul {
+  color: #3674B5;
+}
+
+/* Button Styling */
+.btn-outline-primary {
+  border-color: #3674B5;
+  color: #3674B5;
+}
+
+.btn-outline-primary:hover {
+  background-color: #3674B5;
+  color: white;
+}
