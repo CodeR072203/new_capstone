@@ -34,7 +34,7 @@ export const sendWelcomeEmail = async (email, name) => {
   }
 };
 
-export const sendPasswordResetEmail = async (email, resetURL) => {
+export const sendPasswordResetEmail = async (email, resetCode) => {
   try {
     await resend.emails.send({
       from: "AZUREHUB <onboarding@resend.dev>",
@@ -42,8 +42,8 @@ export const sendPasswordResetEmail = async (email, resetURL) => {
       subject: "Reset Your Password",
       html: `
         <p>Hello,</p>
-        <p>You requested a password reset. Click the link below to set a new password:</p>
-        <p><a href="${resetURL}">${resetURL}</a></p>
+        <p>You requested a password reset. Use the code below to reset your password:</p>
+        <h2>${resetCode}</h2>
         <p>If you didn’t request this, you can safely ignore this email.</p>
       `,
     });

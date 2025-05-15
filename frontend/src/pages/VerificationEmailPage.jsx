@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export function VerificationEmailPage() {
   const [value, setValue] = useState("");
+  const navigate = useNavigate();
   const { verifyEmail, isLoading, error, user } = useAuthStore();
 
   const handleChange = (e, index) => {
     const inputVal = e.target.value;
-    if (!/^\d?$/.test(inputVal)) return; // Only allow single digits
+    if (!/^\d?$/.test(inputVal)) return; 
     const newValue = value.split("");
     newValue[index] = inputVal;
     setValue(newValue.join(""));
@@ -24,8 +26,12 @@ export function VerificationEmailPage() {
     if (!error && !isLoading) {
       toast.success("Your email has been verified successfully", {
         position: "top-center",
-        autoClose: 3000,
+        autoClose: 2000,
       });
+
+      setTimeout(() => {
+        navigate("/"); 
+      }, 2000);
     } else {
       toast.error("Verification failed. Please try again.", {
         position: "top-center",

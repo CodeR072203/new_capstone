@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-const API_URL = "http://localhost:3000/api/auth";
+const API_URL = "/api/auth"; // use relative path if you have Vite proxy set
 
 export const useAuthStore = create((set) => ({
   user: null,
@@ -15,19 +15,13 @@ export const useAuthStore = create((set) => ({
     try {
       const response = await fetch(`${API_URL}/signup`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // crucial for cookies
         body: JSON.stringify({ email, password, name }),
       });
-  
       const data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(data.message || "Signup failed");
-      }
-  
+      if (!response.ok) throw new Error(data.message || "Signup failed");
+
       set({ isLoading: false, isAuthenticated: true, user: data.user });
     } catch (error) {
       set({ isLoading: false, error: error.message });
@@ -35,25 +29,19 @@ export const useAuthStore = create((set) => ({
       throw error;
     }
   },
-  
+
   verifyEmail: async (code) => {
     set({ isLoading: true, error: null });
     try {
       const response = await fetch(`${API_URL}/verify-email`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ code }),
       });
-  
       const data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(data.message || "Email verification failed");
-      }
-  
+      if (!response.ok) throw new Error(data.message || "Verification failed");
+
       set({ isLoading: false, isAuthenticated: true, user: data.user });
     } catch (error) {
       set({ isLoading: false, error: error.message });
@@ -61,62 +49,53 @@ export const useAuthStore = create((set) => ({
       throw error;
     }
   },
-  
+
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
       const response = await fetch(`${API_URL}/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ email, password }),
       });
-  
       const data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
-      }
-  
+      if (!response.ok) throw new Error(data.message || "Login failed");
+
       set({ isLoading: false, isAuthenticated: true, user: data.user });
     } catch (error) {
       set({ isLoading: false, error: error.message });
-      console.log(error);
+      console.error("Login error:", error);
       throw error;
     }
   },
-  
+
   checkAuth: async () => {
     set({ isCheckingAuth: true, error: null });
     try {
       const response = await fetch(`${API_URL}/check-auth`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // must include cookies to send token
       });
       const data = await response.json();
-      if (data.user) {
+      if (response.ok && data.user) {
         set({ isAuthenticated: true, user: data.user, isCheckingAuth: false });
       } else {
         set({ isAuthenticated: false, user: null, isCheckingAuth: false });
       }
     } catch (error) {
       set({ isCheckingAuth: false, isAuthenticated: false, user: null });
-      console.log(error);
+      console.error("Check auth error:", error);
     }
   },
+
   logout: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`${API_URL}/logout`, {
+      await fetch(`${API_URL}/logout`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
       set({ isLoading: false, isAuthenticated: false, user: null });
@@ -125,50 +104,59 @@ export const useAuthStore = create((set) => ({
       throw error;
     }
   },
-  forgotPassword: async (email) => {
+
+  sendResetCode: async (email) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`${API_URL}/forgot-password`, {
+      const response = await fetch(`${API_URL}/send-reset-code`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ email }),
       });
-  
       const data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(data.message || "Forgot password failed");
-      }
-  
+      if (!response.ok) throw new Error(data.message || "Failed to send reset code");
+
       set({ isLoading: false, message: data.message });
     } catch (error) {
       set({ isLoading: false, error: error.message });
-      console.error("Forgot password error:", error);
+      console.error("Send reset code error:", error);
       throw error;
     }
   },
-  
-  resetPassword: async (token, password) => {
+
+  verifyResetCode: async (email, code) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`${API_URL}/reset-password/${token}`, {
+      const response = await fetch(`${API_URL}/verify-reset-code`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email, code }),
       });
-  
       const data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(data.message || "Reset password failed");
-      }
-  
+      if (!response.ok) throw new Error(data.message || "Invalid or expired reset code");
+
+      set({ isLoading: false, message: data.message });
+    } catch (error) {
+      set({ isLoading: false, error: error.message });
+      console.error("Verify reset code error:", error);
+      throw error;
+    }
+  },
+
+  resetPassword: async (email, newPassword) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await fetch(`${API_URL}/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, newPassword }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Reset password failed");
+
       set({ isLoading: false, message: data.message });
     } catch (error) {
       set({ isLoading: false, error: error.message });
@@ -176,5 +164,4 @@ export const useAuthStore = create((set) => ({
       throw error;
     }
   },
-  
 }));
