@@ -1,28 +1,25 @@
 import jwt from "jsonwebtoken";
 
 export const verifyToken = (req, res, next) => {
-  console.log("🛡️ [verifyToken] Incoming cookies:", req.cookies);
-
   const token = req.cookies?.token;
 
   if (!token) {
-    console.warn("⛔ No token found in cookies");
-    return res.status(401).json({ success: false, message: "Unauthorized: No token provided" });
+    console.warn("⛔ No token in cookies");
+    return res.status(401).json({ success: false, message: "Unauthorized: No token" });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (!decoded || !decoded.userId) {
-      console.warn("⛔ Token is invalid or missing userId:", decoded);
-      return res.status(401).json({ success: false, message: "Unauthorized: Invalid token" });
+    if (!decoded?.userId) {
+      console.warn("⛔ Invalid token payload:", decoded);
+      return res.status(401).json({ success: false, message: "Unauthorized: Invalid token payload" });
     }
 
-    console.log("✅ Token verified:", decoded);
     req.userId = decoded.userId;
     next();
   } catch (error) {
-    console.error("🔥 JWT verification failed:", error.message);
-    return res.status(401).json({ success: false, message: "Unauthorized: Token verification failed" });
+    console.error("🔥 Token verification error:", error.message);
+    return res.status(401).json({ success: false, message: "Unauthorized: Token error" });
   }
 };

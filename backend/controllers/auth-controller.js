@@ -14,12 +14,14 @@ import {
 /* ------------------------------- SIGNUP ------------------------------- */
 export const signup = async (req, res) => {
   const { name, email, password } = req.body;
+
   try {
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
-    if (await User.findOne({ email })) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(400).json({ success: false, message: "User already exists" });
     }
 
@@ -35,40 +37,55 @@ export const signup = async (req, res) => {
     });
 
     await user.save();
-    generateJWTToken(res, user._id);
+
+    generateJWTToken(res, user._id); // set JWT as cookie
     await sendVerificationEmail(email, verificationToken);
 
+    const { password: _, ...userData } = user._doc;
     res.status(201).json({
       success: true,
       message: "User created. Verification code sent to email.",
-      user: { ...user._doc, password: undefined },
+      user: userData,
     });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Signup error:", error);
+    res.status(500).json({ success: false, message: "Signup failed", error: error.message });
   }
 };
 
 /* ------------------------------- LOGIN ------------------------------- */
 export const login = async (req, res) => {
   const { email, password } = req.body;
+
   try {
     const user = await User.findOne({ email });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(400).json({ success: false, message: "Invalid credentials" });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: "Email not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: "Incorrect password" });
     }
 
     if (!user.isVerified) {
-      return res.status(400).json({ success: false, message: "Email not verified" });
+      return res.status(400).json({ success: false, message: "Please verify your email before logging in" });
     }
 
-    generateJWTToken(res, user._id);
+    generateJWTToken(res, user._id); // set JWT cookie
+
+    const { password: _, ...userData } = user._doc;
     res.status(200).json({
       success: true,
       message: "Login successful",
-      user: { ...user._doc, password: undefined },
+      user: userData,
     });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Login error:", error);
+    res.status(500).json({ success: false, message: "Login failed", error: error.message });
   }
 };
 
@@ -81,6 +98,7 @@ export const logout = (req, res) => {
 /* --------------------------- VERIFY EMAIL ---------------------------- */
 export const verifyEmail = async (req, res) => {
   const { code } = req.body;
+
   try {
     const user = await User.findOne({
       verificationToken: code,
@@ -97,61 +115,68 @@ export const verifyEmail = async (req, res) => {
     await user.save();
 
     await sendWelcomeEmail(user.email, user.name);
+
     res.status(200).json({ success: true, message: "Email verified successfully" });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Verify email error:", error);
+    res.status(500).json({ success: false, message: "Email verification failed", error: error.message });
   }
 };
 
 /* --------------------------- SEND RESET CODE --------------------------- */
 export const sendResetCode = async (req, res) => {
   const { email } = req.body;
+
   try {
     const user = await User.findOne({ email });
+
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    const resetCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
     user.resetCode = resetCode;
-    user.resetCodeExpiry = Date.now() + 10 * 60 * 1000; // 10 mins
+    user.resetCodeExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
     await user.save();
 
     await sendPasswordResetEmail(email, resetCode);
+
     res.status(200).json({ success: true, message: "Reset code sent to email" });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Send reset code error:", error);
+    res.status(500).json({ success: false, message: "Failed to send reset code", error: error.message });
   }
 };
 
 /* -------------------------- VERIFY RESET CODE -------------------------- */
 export const verifyResetCode = async (req, res) => {
   const { email, code } = req.body;
+
   try {
     const user = await User.findOne({ email });
 
-    if (
-      !user ||
-      user.resetCode !== code ||
-      user.resetCodeExpiry < Date.now()
-    ) {
+    if (!user || user.resetCode !== code || user.resetCodeExpiry < Date.now()) {
       return res.status(400).json({ success: false, message: "Invalid or expired reset code" });
     }
 
-    // Optionally clear to prevent reuse
     user.resetCode = undefined;
     user.resetCodeExpiry = undefined;
     await user.save();
 
     res.status(200).json({ success: true, message: "Reset code verified" });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Verify reset code error:", error);
+    res.status(500).json({ success: false, message: "Reset code verification failed", error: error.message });
   }
 };
 
 /* ----------------------------- RESET PASSWORD ----------------------------- */
 export const resetPassword = async (req, res) => {
   const { email, newPassword } = req.body;
+
   try {
     const user = await User.findOne({ email });
 
@@ -164,21 +189,33 @@ export const resetPassword = async (req, res) => {
     await user.save();
 
     await sendResetSuccessEmail(email);
+
     res.status(200).json({ success: true, message: "Password reset successfully" });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Reset password error:", error);
+    res.status(500).json({ success: false, message: "Password reset failed", error: error.message });
   }
 };
 
 /* ----------------------------- CHECK AUTH ----------------------------- */
 export const checkAuth = async (req, res) => {
-  console.log("🧪 checkAuth hit");
+  console.log("🔐 checkAuth triggered");
   console.log("🧪 Cookies:", req.cookies);
-  console.log("🧪 User ID from token:", req.userId);
+  console.log("🧪 Decoded userId:", req.userId);
 
   if (!req.userId) {
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
 
-  res.status(200).json({ user: { id: req.userId } });
+  try {
+    const user = await User.findById(req.userId).select("-password");
+    if (!user) {
+      return res.status(401).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Auth check failed", error: error.message });
+  }
 };

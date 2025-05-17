@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
-const API_URL = "/api/auth"; // use relative path if you have Vite proxy set
+// ✅ Replace with full backend URL
+const API_URL = "http://localhost:3000/api/auth";
 
 export const useAuthStore = create((set) => ({
   user: null,
@@ -16,17 +17,18 @@ export const useAuthStore = create((set) => ({
       const response = await fetch(`${API_URL}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // crucial for cookies
+        credentials: "include",
         body: JSON.stringify({ email, password, name }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Signup failed");
 
       set({ isLoading: false, isAuthenticated: true, user: data.user });
+      return true;
     } catch (error) {
       set({ isLoading: false, error: error.message });
       console.error("Signup error:", error);
-      throw error;
+      return false;
     }
   },
 
@@ -43,10 +45,11 @@ export const useAuthStore = create((set) => ({
       if (!response.ok) throw new Error(data.message || "Verification failed");
 
       set({ isLoading: false, isAuthenticated: true, user: data.user });
+      return true;
     } catch (error) {
       set({ isLoading: false, error: error.message });
       console.error("Verify email error:", error);
-      throw error;
+      return false;
     }
   },
 
@@ -63,10 +66,11 @@ export const useAuthStore = create((set) => ({
       if (!response.ok) throw new Error(data.message || "Login failed");
 
       set({ isLoading: false, isAuthenticated: true, user: data.user });
+      return true;
     } catch (error) {
       set({ isLoading: false, error: error.message });
       console.error("Login error:", error);
-      throw error;
+      return false;
     }
   },
 
@@ -75,7 +79,6 @@ export const useAuthStore = create((set) => ({
     try {
       const response = await fetch(`${API_URL}/check-auth`, {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
         credentials: "include", // must include cookies to send token
       });
       const data = await response.json();

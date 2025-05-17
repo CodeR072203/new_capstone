@@ -1,119 +1,70 @@
-import { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/authStore";
+import { useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-export default function ForgotPasswordPage() {
-  const [step, setStep] = useState(1);
+function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
+  const [codeSent, setCodeSent] = useState(false);
   const [code, setCode] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const { forgotPassword, verifyResetCode, resetPassword, message, isLoading } = useAuthStore();
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    setErrorMessage("");
-  }, [email, code, newPassword]);
-
-  const handleSendCode = async (e) => {
-    e.preventDefault();
+  const handleSendCode = async () => {
     try {
-      await forgotPassword(email);
-      setStep(2);
-    } catch {
-      setErrorMessage("Could not send verification code. Try again.");
+      const response = await axios.post("/api/auth/send-reset-code", { email });
+      setCodeSent(true);
+      setError("");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to send reset code");
     }
   };
 
-  const handleVerifyCode = async (e) => {
-    e.preventDefault();
+  const handleVerifyCode = async () => {
     try {
-      await verifyResetCode(email, code);
-      setStep(3);
-    } catch {
-      setErrorMessage("Invalid or expired code.");
-    }
-  };
-
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
-    try {
-      await resetPassword(email, newPassword);
-    } catch {
-      setErrorMessage("Password reset failed. Try again.");
+      const response = await axios.post("/api/auth/verify-reset-code", { email, code });
+      navigate("/reset-password", { state: { email } });
+    } catch (err) {
+      setError(err.response?.data?.message || "Code verification failed");
     }
   };
 
   return (
-    <div className="container mt-5 d-flex justify-content-center">
-      <div className="card" style={{ maxWidth: "500px", width: "100%" }}>
-        <div className="card-header text-center">
-          <h5 className="card-title mb-0">Reset Password</h5>
-        </div>
-        <div className="card-body">
-          {step === 1 && (
-            <form onSubmit={handleSendCode}>
-              <input
-                type="email"
-                className="form-control mb-3"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <button type="submit" className="btn btn-primary w-100">
-                Send Verification Code
-              </button>
-            </form>
-          )}
+    <div className="container mt-5" style={{ maxWidth: 400 }}>
+      <h3>Forgot Password</h3>
+      <p className="text-muted">Enter your email to receive a reset code.</p>
 
-          {step === 2 && (
-            <form onSubmit={handleVerifyCode}>
-              <input
-                type="text"
-                maxLength="6"
-                className="form-control mb-3"
-                placeholder="Enter 6-digit code"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                required
-              />
-              <button type="submit" className="btn btn-primary w-100">
-                Verify Code
-              </button>
-            </form>
-          )}
+      <input
+        type="email"
+        className="form-control mb-3"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        disabled={codeSent}
+      />
 
-          {step === 3 && (
-            <form onSubmit={handleResetPassword}>
-              <input
-                type="password"
-                className="form-control mb-3"
-                placeholder="New password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-              />
-              <button type="submit" className="btn btn-success w-100" disabled={isLoading}>
-                {isLoading ? "Resetting..." : "Reset Password"}
-              </button>
-            </form>
-          )}
+      {codeSent ? (
+        <>
+          <input
+            type="text"
+            className="form-control mb-3"
+            placeholder="Enter 6-digit code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+          />
+          <button className="btn btn-primary w-100" onClick={handleVerifyCode}>
+            Verify Code
+          </button>
+        </>
+      ) : (
+        <button className="btn btn-primary w-100" onClick={handleSendCode}>
+          Send Reset Code
+        </button>
+      )}
 
-          {errorMessage && <div className="alert alert-danger mt-3">{errorMessage}</div>}
-          {message && <div className="alert alert-success mt-3">{message}</div>}
-        </div>
-
-        {/* ✅ Only show "Back to Login" if password reset succeeded */}
-        {step === 3 && message && (
-          <div className="card-footer text-center">
-            <button className="btn btn-link" onClick={() => navigate("/login")}>
-              Back to Login
-            </button>
-          </div>
-        )}
-      </div>
+      {error && <div className="alert alert-danger mt-3">{error}</div>}
     </div>
   );
 }
+
+
+export default ForgotPasswordPage

@@ -12,10 +12,15 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const success = await login(email, password);
-    if (success) navigate("/dashboard");
-  };
+  e.preventDefault();
+  const success = await login(email, password);
+
+  if (success) {
+    navigate("/dashboard");
+  } else {
+    console.warn("Login failed or unauthorized");
+  }
+};
 
   return (
     <div className="d-flex align-items-center justify-content-center" style={{ height: '100vh' }}>
