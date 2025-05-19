@@ -10,7 +10,7 @@ import Home from "./pages/Home";
 import './index.css';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from "./pages/ResetPasswordPage";
-
+import ChangePasswordPage from "./pages/ChangePasswordPage"; // ✅ New import
 
 const ProtectRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -68,16 +68,25 @@ function App() {
           }
         />
         <Route path="/verify-email" element={<VerificationEmailPage />} />
-        
-        {/* 🛠 Allow public access to Forgot and Reset Password */}
+
+        {/* 🛠 Public Routes */}
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-        
+
+        {/* ✅ Protected Routes */}
         <Route
           path="/dashboard"
           element={
             <ProtectRoute>
               <DashboardPage />
+            </ProtectRoute>
+          }
+        />
+        <Route
+          path="/change-password"
+          element={
+            <ProtectRoute>
+              <ChangePasswordPage />
             </ProtectRoute>
           }
         />

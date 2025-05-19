@@ -1,9 +1,8 @@
-/* src/index.css or src/main.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* index.css */
+/* Reset */
 * {
   margin: 0;
   padding: 0;
@@ -13,9 +12,27 @@
 body, html {
   width: 100%;
   overflow-x: hidden;
-  
 }
 
+/* Hide scrollbars (careful for accessibility) */
 body::-webkit-scrollbar {
   display: none;
+}
+
+/* Custom modal position */
+.modal-top-right {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  margin: 0;
+  max-width: 350px;
+  z-index: 1050;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.modal-content {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }

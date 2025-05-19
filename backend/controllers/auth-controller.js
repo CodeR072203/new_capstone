@@ -1,4 +1,4 @@
-// controllers/auth-controller.js
+// controllers/auth-controller.js 
 
 import { User } from "../model/user.js";
 import bcrypt from "bcryptjs";
@@ -218,4 +218,32 @@ export const checkAuth = async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: "Auth check failed", error: error.message });
   }
+};
+
+/* -------------------------- CHANGE PASSWORD (AUTH) -------------------------- */
+export const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  try {
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: "Current password is incorrect" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ success: true, message: "Password updated successfully" });
+
+  } catch (error) {
+    console.error("Change password error:", error);
+    res.status(500).json({ success: false, message: "Password update failed", error: error.message });
+  } 
 };

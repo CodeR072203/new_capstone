@@ -111,7 +111,7 @@ export const useAuthStore = create((set) => ({
   sendResetCode: async (email) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`${API_URL}/send-reset-code`, {
+      const response = await fetch(`${API_URL}/request-password-code`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

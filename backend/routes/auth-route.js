@@ -1,5 +1,3 @@
-// routes/auth-route.js
-
 import express from "express";
 import {
   signup,
@@ -10,6 +8,7 @@ import {
   verifyResetCode,
   resetPassword,
   checkAuth,
+  changePassword,
 } from "../controllers/auth-controller.js";
 
 import { verifyToken } from "../middleware/verifyToken.js";
@@ -33,17 +32,20 @@ router.post("/verify-email", verifyEmail);
 /* -------------------------- Password Reset Flow -------------------------- */
 
 // Send 6-digit reset code to email
-router.post("/send-reset-code", sendResetCode);
+router.post("/request-password-code", sendResetCode);
 
 // Verify 6-digit reset code
-router.post("/verify-reset-code", verifyResetCode);
+router.post("/verify-password-code", verifyResetCode);
 
 // Reset password using verified code
 router.post("/reset-password", resetPassword);
 
-/* ---------------------------- Protected Route ---------------------------- */
+/* ---------------------------- Protected Routes --------------------------- */
 
 // Check if user is authenticated (requires valid token)
 router.get("/check-auth", verifyToken, checkAuth);
+
+// Change password (requires valid token)
+router.post("/change-password", verifyToken, changePassword);
 
 export default router;
